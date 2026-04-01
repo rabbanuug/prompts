@@ -10,6 +10,7 @@ Inspect the project before writing any files:
 
 - Identify the runtime, framework, and package manager
 - Read the dependency manifest to find the build command and start command
+- **Identify hidden build-time dependencies** (e.g. Laravel Vite plugins that require `composer.json` and PHP during Node build steps)
 - Identify external services the app depends on (databases, caches, queues)
 - Identify the port(s) the app listens on
 - Check if `Dockerfile`, `compose.yml`, or `.dockerignore` already exist — review before overwriting
@@ -34,6 +35,7 @@ Write a multi-stage `Dockerfile` for the stack identified in Step 1.
 ## Step 4 — Write `compose.yml`
 
 Create the base `compose.yml`. Include all services identified in Step 1 with appropriate health checks, named networks, named volumes, and secrets configuration.
+**CRITICAL:** Do NOT use variables like `${APP_NAME}` for `container_name:` values to avoid parsing errors if the user has spaces in their app name. Hardcode safe container names (e.g. `app_name_app`).
 
 ---
 
@@ -49,9 +51,10 @@ Create the production overlay with resource limits, `APP_ENV=production`, extern
 
 ---
 
-## Step 7 — Create `.env.example`
+## Step 7 — Create `.env.example` & Check `.env`
 
 Create `.env.example` with all required variables using empty or placeholder values. Confirm `.env` is in `.gitignore`.
+**CRITICAL:** If an active `.env` file exists, aggressively check that its existing values (e.g. `DB_DATABASE=laravel`) don't silently override new `compose.yml` fallbacks (`${DB_DATABASE:-new_db}`). Update the `.env` directly so it matches the new Docker compose conventions if necessary.
 
 ---
 

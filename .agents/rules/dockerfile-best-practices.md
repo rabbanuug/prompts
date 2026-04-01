@@ -88,6 +88,9 @@ FROM gcr.io/distroless/nodejs20-debian12
 # ... copy only runtime artifacts
 ```
 
+**Watch for cross-language build dependencies.**
+When constructing multi-stage builds for full-stack apps (e.g., building a Laravel/Vite frontend in a Node builder), explicitly verify if the bundler plugins natively execute or require the backend language to resolve paths. If so, you MUST `COPY composer.json` (or equivalent manifests) into the frontend builder stage to prevent silent compilation failures.
+
 **Use distroless or alpine as the final stage.**
 - `gcr.io/distroless/*` — no shell, no package manager, minimal attack surface. Preferred for production.
 - `*-alpine` — very small, has a shell if debugging is ever needed. Acceptable when distroless isn't available for the runtime.
